@@ -1,4 +1,4 @@
-#include <sensor_msgs/Range.h>
+#include <sensor_msgs/msg/range.hpp>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <string>
@@ -10,7 +10,7 @@ class Vl53l0x {
 
     ~Vl53l0x(){};
 
-    void poll(sensor_msgs::Range::Ptr scan);
+    void poll(sensor_msgs::msg::Range::SharedPtr scan);
     void close() { shutting_down_ = true; };
 
    private:
@@ -22,4 +22,4 @@ class Vl53l0x {
     boost::asio::serial_port serial_;  ///< @brief Actual serial port object for reading/writing to the range sensor
     uint16_t ir_range_;                ///< @brief Range data from sensor.
 };
-};  // namespace range_sensor
+}  // namespace range_sensor

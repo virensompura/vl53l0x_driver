@@ -1,12 +1,13 @@
-#include <ros/ros.h>
-#include <vl53l0x_driver/vl53l0x.h>
+#include "rclcpp/rclcpp.hpp"
+#include "/home/admin1/vama_ws/src/vl53l0x_driver/include/vl53l0x_driver/vl53l0x.h"
+
 
 namespace range_sensor {
 Vl53l0x::Vl53l0x(const std::string &port, uint32_t baud_rate, uint32_t firmware, boost::asio::io_service &io) : port_(port), baud_rate_(baud_rate), firmware_(firmware), shutting_down_(false), serial_(io, port_) {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 }
 
-void Vl53l0x::poll(sensor_msgs::Range::Ptr range_scan) {
+void Vl53l0x::poll(sensor_msgs::msg::Range::SharedPtr range_scan) {
     uint8_t temp_char;
     bool got_scan = false;
     uint8_t start_count = 0;
@@ -20,15 +21,15 @@ void Vl53l0x::poll(sensor_msgs::Range::Ptr range_scan) {
             }
         } else if (start_count == 1) {
             if (temp_char == 0xEF) {
-                ROS_WARN("Sensor hardware initialization failed");
+                // ROS_WARN("Sensor hardware initialization failed");
                 start_count = 0;
                 got_scan = true;
             } else if (temp_char == 0xE0) {
-                ROS_INFO("Sensor hardware has been initialized successfully");
+                // ROS_INFO("Sensor hardware has been initialized successfully");
                 start_count = 0;
                 got_scan = true;
             } else if (temp_char == 0xEA) {
-                ROS_INFO("Distance is out of range");
+                // ROS_INFO("Distance is out of range");
                 start_count = 0;
                 got_scan = true;
             } else if (temp_char == 0x1D) {
@@ -36,7 +37,7 @@ void Vl53l0x::poll(sensor_msgs::Range::Ptr range_scan) {
                 got_scan = true;
                 // Now read range
                 boost::asio::read(serial_, boost::asio::buffer(&ir_range_, 2));
-                range_scan->radiation_type = sensor_msgs::Range::INFRARED;
+                range_scan->radiation_type = sensor_msgs::msg::Range::INFRARED;
                 range_scan->field_of_view = 0.44;  //25 degrees
                 range_scan->min_range = 0.03;
                 range_scan->max_range = 1.2;
@@ -46,4 +47,4 @@ void Vl53l0x::poll(sensor_msgs::Range::Ptr range_scan) {
         }
     }
 }
-};  // namespace range_sensor
+}  // namespace range_sensor
